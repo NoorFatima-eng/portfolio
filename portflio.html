@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noor Fatima | Portfolio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --space-bg: #03000a;
+            --space-core: #09021c;
+            --accent: #00f3ff;
+            --accent-soft: rgba(0, 243, 255, 0.5);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(9, 2, 28, 0.4);
+            --glass-border: rgba(0, 243, 255, 0.2);
+            --transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            scroll-behavior: smooth; cursor: none;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 50%, var(--space-core) 0%, var(--space-bg) 100%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none; z-index: 9990; opacity: 0.3;
+        }
+
+        #neural-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; opacity: 0.5;
+        }
+
+        section, nav { position: relative; z-index: 10; }
+
+        .cursor-dot {
+            position: fixed; top: 0; left: 0; width: 6px; height: 6px;
+            background: var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 100000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--accent);
+        }
+        .cursor-ring {
+            position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+            border: 1px solid var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 99999;
+            transform: translate(-50%, -50%); transition: transform 0.2s, width 0.2s, height 0.2s;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3) inset;
+        }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.2s; }
+        .reveal-delay-2 { transition-delay: 0.4s; }
+
+        /* --- Navbar --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 18px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass-bg); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); z-index: 1000;
+        }
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 600; letter-spacing: 1px; color: var(--text-main); }
+        .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a {
+            color: var(--text-main); text-decoration: none; font-size: 1.05rem;
+            font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; letter-spacing: 1px;
+            position: relative; transition: var(--transition);
+        }
+        .nav-links a:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+
+        /* --- News-style ticker bar --- */
+        .ticker-bar {
+            position: fixed; top: 78px; width: 100%; z-index: 999;
+            background: rgba(0, 243, 255, 0.06);
+            border-bottom: 1px solid var(--glass-border);
+            overflow: hidden; white-space: nowrap;
+            display: flex; align-items: center;
+        }
+        .ticker-tag {
+            flex-shrink: 0; background: var(--accent); color: #00131a;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+            font-size: 0.8rem; letter-spacing: 1px; padding: 6px 16px;
+            z-index: 2;
+        }
+        .ticker-track {
+            display: flex; animation: scrollTicker 22s linear infinite;
+        }
+        .ticker-track span {
+            font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; letter-spacing: 2px;
+            color: var(--text-main); padding: 6px 30px; text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: 30px;
+        }
+        .ticker-track span::after { content: '//'; color: var(--accent); }
+        @keyframes scrollTicker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- Intro --- */
+        #home {
+            min-height: 100vh; display: flex; align-items: center;
+            padding: 170px 5% 60px;
+        }
+        .intro-content { max-width: 900px; }
+        .greeting {
+            font-family: 'Space Grotesk', sans-serif; color: var(--accent);
+            font-size: 1.3rem; margin-bottom: 14px; display: block; letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+        .name-title {
+            font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.6rem, 7vw, 5rem);
+            font-weight: 700; line-height: 1.15; margin-bottom: 24px; color: #fff;
+        }
+        .name-title span { color: var(--accent); text-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+        .role-line {
+            font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            color: var(--text-muted); margin-bottom: 24px; letter-spacing: 0.5px;
+        }
+        .role-line strong { color: var(--accent); font-weight: 600; }
+        .intro-summary {
+            font-size: 1.25rem; color: var(--text-muted); max-width: 720px; margin-bottom: 40px;
+        }
+
+        .btn-glow {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 30px; background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--accent); color: var(--accent);
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; text-decoration: none; text-transform: uppercase;
+            border-radius: 4px; transition: var(--transition);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15) inset;
+        }
+        .btn-glow:hover {
+            background: var(--accent); color: #000;
+            box-shadow: 0 0 30px var(--accent);
+        }
+
+        /* --- Projects --- */
+        #projects { padding: 100px 5%; position: relative; }
+        .section-header {
+            font-family: 'Space Grotesk', sans-serif; font-size: 2.6rem; margin-bottom: 70px;
+            display: flex; align-items: center; gap: 20px; color: #fff;
+        }
+        .section-header::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); }
+
+        .project-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+            margin-bottom: 130px; align-items: center;
+        }
+        .project-row.reverse { direction: rtl; }
+        .project-row.reverse > * { direction: ltr; }
+
+        .project-info {
+            background: var(--glass-bg); padding: 40px; border-radius: 12px;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+        }
+        .project-info::before {
+            content: ''; position: absolute; top: -50px; right: -50px;
+            width: 100px; height: 100px; background: var(--accent);
+            filter: blur(70px); z-index: -1; opacity: 0.25;
+        }
+
+        .project-info h3 { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; margin-bottom: 10px; color: #fff; }
+        .tech-stack {
+            font-family: 'Space Grotesk', sans-serif; color: var(--accent);
+            font-size: 0.95rem; margin-bottom: 22px; letter-spacing: 1px;
+        }
+        .project-info p { color: var(--text-muted); margin-bottom: 28px; font-size: 1.15rem; }
+
+        /* --- PREMIUM STACKED CARD CAROUSEL --- */
+        .stacked-carousel {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            perspective: 1200px;
+            user-select: none;
+        }
+
+        .stack-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* DEFAULT STATE FOR CARDS (Handles items > 5 so they hide properly) */
+        .stack-card {
+            position: absolute;
+            width: 88%;
+            max-width: 460px;
+            height: 260px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(0, 243, 255, 0.2);
+            overflow: hidden;
+            background: rgba(9, 2, 28, 0.8); /* Darker background */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+                        opacity 0.5s ease,
+                        filter 0.5s ease,
+                        border-color 0.3s ease,
+                        box-shadow 0.3s ease;
+            cursor: pointer;
+            
+            /* Hide by default for cards out of the top 5 */
+            opacity: 0;
+            pointer-events: none;
+            z-index: 0;
+            transform: translateY(100px) scale(0.6);
+        }
+
+        /* FIX FOR MOBILE SNIPS: Use contain instead of cover so height/width isn't cut */
+        .stack-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Changed from 'cover' */
+            background: rgba(0, 0, 0, 0.4); /* Optional space filler for mobile snips */
+            pointer-events: none;
+        }
+
+        /* 3D Depth Card Offsets (Top 5 visible cards) */
+        .stack-card[data-pos="0"] {
+            transform: translateY(0px) scale(1);
+            z-index: 5;
+            opacity: 1;
+            border-color: var(--accent);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.3), 0 20px 40px rgba(0,0,0,0.9);
+            filter: brightness(1);
+            pointer-events: auto; /* Enable clicks */
+        }
+        .stack-card[data-pos="1"] {
+            transform: translateY(20px) scale(0.92);
+            z-index: 4; opacity: 0.85; filter: brightness(0.75);
+            pointer-events: auto;
+        }
+        .stack-card[data-pos="2"] {
+            transform: translateY(40px) scale(0.84);
+            z-index: 3; opacity: 0.65; filter: brightness(0.55);
+            pointer-events: auto;
+        }
+        .stack-card[data-pos="3"] {
+            transform: translateY(60px) scale(0.76);
+            z-index: 2; opacity: 0.45; filter: brightness(0.4);
+            pointer-events: auto;
+        }
+        .stack-card[data-pos="4"] {
+            transform: translateY(80px) scale(0.68);
+            z-index: 1; opacity: 0.25; filter: brightness(0.25);
+            pointer-events: auto;
+        }
+
+        .stack-card:hover[data-pos="0"] {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 0 35px rgba(0, 243, 255, 0.5);
+        }
+
+        .stack-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 15px;
+            z-index: 10;
+        }
+
+        .stack-btn {
+            background: rgba(0, 243, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            color: var(--accent);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+        .stack-btn:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .stack-counter {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+        }
+
+        .click-hint {
+            position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+            font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; letter-spacing: 1px;
+            color: var(--accent); opacity: 0.7; transition: var(--transition);
+        }
+        .stacked-carousel:hover .click-hint { opacity: 1; color: #fff; }
+
+        /* --- Modal --- */
+       .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(3, 0, 10, 0.9); backdrop-filter: blur(20px);
+    z-index: 50000; display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.4s;
+    padding: 20px 0;
+    overflow-y: auto; /* Screen size choti hone par outer scroll allow kare ga */
+}
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .close-btn {
+            position: absolute; top: 30px; right: 40px; font-size: 3rem;
+            color: var(--text-muted); transition: color 0.3s;
+        }
+        .close-btn:hover { color: var(--accent); text-shadow: 0 0 15px var(--accent); }
+
+        .flashcard-wrapper { width: 90%; max-width: 900px; perspective: 1500px; }
+
+        .flashcard {
+    background: rgba(10, 20, 40, 0.6); border: 1px solid var(--accent);
+    border-radius: 12px; padding: 25px; text-align: center;
+    box-shadow: 0 0 40px rgba(0, 243, 255, 0.12) inset, 0 20px 50px rgba(0,0,0,0.8);
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transform-style: preserve-3d; position: relative;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+        }
+        .flashcard::before, .flashcard::after {
+            content: ''; position: absolute; width: 30px; height: 30px; border: 2px solid var(--accent);
+        }
+        .flashcard::before { top: -5px; left: -5px; border-right: none; border-bottom: none; }
+        .flashcard::after { bottom: -5px; right: -5px; border-left: none; border-top: none; }
+
+        .is-flipping { animation: flipHoloCard 0.6s forwards; }
+        @keyframes flipHoloCard {
+            0% { transform: rotateY(0deg); opacity: 1; }
+            50% { transform: rotateY(90deg) scale(0.9); opacity: 0.5; filter: blur(5px); }
+            51% { transform: rotateY(-90deg) scale(0.9); opacity: 0.5; filter: blur(5px); }
+            100% { transform: rotateY(0deg); opacity: 1; }
+        }
+
+       .fc-image {
+    width: 100%;
+    max-height: 320px; /* Image height control taake text/buttons ke liye jagah rahe */
+    object-fit: contain;
+    border-radius: 4px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+       .fc-desc {
+    font-size: 1.15rem; color: var(--text-main); margin-bottom: 15px; font-family: 'Rajdhani', sans-serif;
+    
+    /* Description Scroll Fix */
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+       .fc-controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+        .fc-counter { font-family: 'Space Grotesk', sans-serif; color: var(--accent); font-weight: bold; letter-spacing: 2px; }
+
+        /* --- Skills --- */
+        #skills { padding: 100px 5%; }
+        .skills-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 26px; }
+        .skill-box {
+            background: var(--glass-bg); padding: 32px 20px;
+            border-radius: 8px; text-align: center; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px); transition: var(--transition);
+        }
+        .skill-box:hover {
+            transform: translateY(-8px); border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.15) inset;
+        }
+        .skill-box i { font-size: 2.6rem; color: var(--accent); margin-bottom: 18px; text-shadow: 0 0 15px rgba(0,243,255,0.4); }
+        .skill-box h4 { font-family: 'Space Grotesk', sans-serif; margin-bottom: 8px; font-size: 1.2rem; color: #fff; }
+        .skill-box p { font-size: 0.95rem; color: var(--text-muted); }
+
+        /* --- Contact --- */
+        #contact {
+            padding: 110px 5%; text-align: center; position: relative;
+            border-top: 1px solid var(--glass-border); background: linear-gradient(to top, rgba(0, 243, 255, 0.05), transparent);
+        }
+        .contact-title { font-family: 'Space Grotesk', sans-serif; font-size: 3.2rem; margin-bottom: 20px; color: #fff; }
+        .contact-email {
+            font-size: 2rem; color: var(--accent); text-decoration: none;
+            display: inline-block; margin-bottom: 40px; font-family: 'Rajdhani', sans-serif; font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); transition: var(--transition);
+        }
+        .contact-email:hover { color: #fff; text-shadow: 0 0 20px var(--accent); }
+
+        .social-links { display: flex; justify-content: center; gap: 25px; }
+        .social-link {
+            width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--glass-border); border-radius: 50%;
+            color: var(--text-main); text-decoration: none; font-size: 1.4rem;
+            transition: var(--transition); background: rgba(255,255,255,0.03);
+        }
+        .social-link:hover {
+            background: var(--accent); border-color: var(--accent); color: #000;
+            transform: translateY(-5px); box-shadow: 0 0 20px var(--accent);
+        }
+
+        @media (max-width: 900px) {
+            .project-row, .project-row.reverse { grid-template-columns: 1fr; gap: 40px; }
+            .stacked-carousel { height: 360px; }
+            .stack-container { height: 260px; }
+            .stack-card { height: 210px; }
+            .project-info { padding: 25px; }
+            #home { padding-top: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <canvas id="neural-canvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+
+    <nav>
+        <div class="logo">Noor<span>.</span>Fatima</div>
+        <div class="nav-links">
+            <a href="#home" class="hover-target">Home</a>
+            <a href="#projects" class="hover-target">Projects</a>
+            <a href="#skills" class="hover-target">Skills</a>
+            <a href="#contact" class="hover-target">Contact</a>
+        </div>
+    </nav>
+
+    <!-- News-style scrolling ticker -->
+    <div class="ticker-bar">
+        <div class="ticker-tag">NOW BUILDING</div>
+        <div class="ticker-track">
+            <span>Software Engineer</span>
+            <span>Flutter Developer</span>
+            <span>Python Developer</span>
+            <span>AI &amp; Workflow Automation</span>
+            <span>Backend Developer</span>
+            <span>Software Engineer</span>
+            <span>Flutter Developer</span>
+            <span>Python Developer</span>
+            <span>AI &amp; Workflow Automation</span>
+            <span>Backend Developer</span>
+        </div>
+    </div>
+
+    <!-- INTRO -->
+    <section id="home">
+        <div class="intro-content reveal">
+            <span class="greeting">Hello, I'm</span>
+            <h1 class="name-title">Noor Fatima <span>.</span></h1>
+            <p class="role-line reveal reveal-delay-1">
+    <strong>Software Engineer</strong> focused on AI-powered software, scalable backend systems, and intelligent workflow automation.
+</p>
+            <p class="intro-summary reveal reveal-delay-1">
+               I'm a Software Engineering graduate focused on building AI-driven applications, scalable backend systems, and intelligent automation. From developing an AI-powered mental health counseling platform with smart appointment booking and live video sessions to creating a secure blockchain voting system and end-to-end n8n workflows, I enjoy transforming complex ideas into reliable, user-focused software.
+            </p>
+            <div class="reveal reveal-delay-2">
+                <a href="#projects" class="btn-glow hover-target">See My Work <i class="fa-solid fa-arrow-down"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+        <h2 class="section-header reveal">Projects</h2>
+
+        <!-- MENTAXIA (Updated with Image Slots) -->
+        <div class="project-row reveal">
+            <div class="project-info">
+                <h3>Mentaxia</h3>
+
+                <div class="tech-stack">FLUTTER // FLASK // MONGODB // GROQ API // WHISPER</div>
+                <p>An AI-powered mental health counseling platform that combines a Groq-based chatbot with custom safety guardrails, AI-assisted appointment booking, Whisper speech-to-text transcription, and ZegoCloud-powered live therapy sessions for a seamless counseling experience.</p>
+                <a href="https://github.com/NoorFatima-eng" target="_blank" class="btn-glow hover-target" style="padding: 8px 20px; font-size: 0.9rem;">
+                    <i class="fa-brands fa-github"></i> View Repo
+                </a>
+            </div>
+
+            <!-- Stacked Card Carousel -->
+            <div class="stacked-carousel hover-target" data-project="mentaxia">
+                <div class="stack-container">
+                    <!-- Added 11 Slots for your snips -->
+                    <div class="stack-card" data-pos="0" onclick="onCardClick('mentaxia', 0)"><img src="login_as.png" alt="Mentaxia 1"></div>
+                    <div class="stack-card" data-pos="1" onclick="onCardClick('mentaxia', 1)"><img src="login.png" alt="Mentaxia 2"></div>
+                    <div class="stack-card" data-pos="2" onclick="onCardClick('mentaxia', 2)"><img src="patient_dashboard.png" alt="Mentaxia 3"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('mentaxia', 3)"><img src="patient_account.png" alt="Mentaxia 4"></div>
+                    <div class="stack-card" data-pos="4" onclick="onCardClick('mentaxia', 4)"><img src="available_counselor.png" alt="Mentaxia 5"></div>
+                    <div class="stack-card" data-pos="5" onclick="onCardClick('mentaxia', 5)"><img src="book.png" alt="Mentaxia 6"></div>
+                    <div class="stack-card" data-pos="6" onclick="onCardClick('mentaxia', 6)"><img src="therapy_screen.png" alt="Mentaxia 7"></div>
+                    <div class="stack-card" data-pos="7" onclick="onCardClick('mentaxia', 7)"><img src="codered.png" alt="Mentaxia 8"></div>
+                    <div class="stack-card" data-pos="8" onclick="onCardClick('mentaxia', 8)"><img src="appointment.png" alt="Mentaxia 9"></div>
+                    <div class="stack-card" data-pos="9" onclick="onCardClick('mentaxia', 9)"><img src="chat.png" alt="Mentaxia 10"></div>
+                    <div class="stack-card" data-pos="10" onclick="onCardClick('mentaxia', 10)"><img src="transcript.png" alt="Mentaxia 11"></div>
+                    <div class="stack-card" data-pos="11" onclick="onCardClick('mentaxia', 11)"><img src="doctor_dashboard.png" alt="Mentaxia 12"></div>
+                    <div class="stack-card" data-pos="12" onclick="onCardClick('mentaxia', 12)"><img src="appointment_screen.png" alt="Mentaxia 11"></div>
+                    <div class="stack-card" data-pos="13" onclick="onCardClick('mentaxia', 13)"><img src="session_detail.png" alt="Mentaxia 11"></div>
+                    <div class="stack-card" data-pos="14" onclick="onCardClick('mentaxia', 14)"><img src="doctor_availabilityscreen.png" alt="Mentaxia 11"></div>
+                    <div class="stack-card" data-pos="15" onclick="onCardClick('mentaxia', 15)"><img src="doctor_profile.png" alt="Mentaxia 11"></div>
+                </div>
+                <div class="stack-controls">
+                    <button class="stack-btn hover-target" onclick="cycleStack('mentaxia', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="stack-counter">1 / 16</span>
+                    <button class="stack-btn hover-target" onclick="cycleStack('mentaxia', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <span class="click-hint">[ SCROLL / CLICK CARD TO CYCLE • TAP FRONT FOR FULL VIEW ]</span>
+            </div>
+        </div>
+
+        <!-- BLOCKVOTE -->
+        <div class="project-row reverse reveal">
+            <div class="project-info">
+                <h3>BlockVote</h3>
+                <div class="tech-stack">PYTHON // AES // RSA // BLOCKCHAIN</div>
+                <p>An information security project: a blockchain-based voting system built to protect vote integrity. Uses a custom blockchain with AES encryption and RSA cryptography to instantly flag any unauthorized tampering with votes.</p>
+                <a href="https://github.com/NoorFatima-eng" target="_blank" class="btn-glow hover-target" style="padding: 8px 20px; font-size: 0.9rem;">
+                    <i class="fa-brands fa-github"></i> View Repo
+                </a>
+            </div>
+
+            <div class="stacked-carousel hover-target" data-project="blockvote">
+                <div class="stack-container">
+                    <div class="stack-card" data-pos="0" onclick="onCardClick('blockvote', 0)"><img src="register.png" alt="BlockVote Interface"></div>
+                    <div class="stack-card" data-pos="1" onclick="onCardClick('blockvote', 1)"><img src="voterlogin.png" alt="Block Encryption"></div>
+                    <div class="stack-card" data-pos="2" onclick="onCardClick('blockvote', 2)"><img src="voteID.png" alt="RSA Verification"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('blockvote', 3)"><img src="castvote.png" alt="Node Ledger"></div>
+                    <div class="stack-card" data-pos="4" onclick="onCardClick('blockvote', 4)"><img src="casted.png" alt="Audit Logs"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('blockvote', 5)"><img src="admin.png" alt="Node Ledger"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('blockvote', 6)"><img src="adminp.png" alt="Node Ledger"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('blockvote', 7)"><img src="result.png" alt="Node Ledger"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('blockvote', 8)"><img src="test.png" alt="Node Ledger"></div>
+                </div>
+                <div class="stack-controls">
+                    <button class="stack-btn hover-target" onclick="cycleStack('blockvote', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="stack-counter">1 / 9</span>
+                    <button class="stack-btn hover-target" onclick="cycleStack('blockvote', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <span class="click-hint">[ SCROLL / CLICK CARD TO CYCLE • TAP FRONT FOR FULL VIEW ]</span>
+            </div>
+        </div>
+
+        <!-- AUTOMATION -->
+        <div class="project-row reveal">
+            <div class="project-info">
+                <h3>Workflow Automation</h3>
+                <div class="tech-stack">n8n // API // WEBHOOKS</div>
+                <p>End-to-end automated pipelines built in n8n, integrating OpenAI and custom AI agents for email automation, YouTube Shorts generation, and other scheduled business workflows.</p>
+                <a href="https://github.com/NoorFatima-eng" target="_blank" class="btn-glow hover-target" style="padding: 8px 20px; font-size: 0.9rem;">
+                    <i class="fa-brands fa-github"></i> View Repo
+                </a>
+            </div>
+
+            <div class="stacked-carousel hover-target" data-project="automation">
+                <div class="stack-container">
+                    <div class="stack-card" data-pos="0" onclick="onCardClick('automation', 0)"><img src="email_automation.png" alt="n8n Pipeline Canvas"></div>
+                    <div class="stack-card" data-pos="1" onclick="onCardClick('automation', 1)"><img src="post.png" alt="OpenAI Agent Config"></div>
+                    <div class="stack-card" data-pos="2" onclick="onCardClick('automation', 2)"><img src="scrapping.png" alt="Webhook Trigger Logs"></div>
+                    <div class="stack-card" data-pos="3" onclick="onCardClick('automation', 3)"><img src="copywritefree.png" alt="YouTube Automation Flow"></div>
+                    <div class="stack-card" data-pos="4" onclick="onCardClick('automation', 4)"><img src="quotes.png" alt="Scheduled Analytics Output"></div>
+                     <div class="stack-card" data-pos="5" onclick="onCardClick('automation', 5)"><img src="youtube.png" alt="YouTube Automation Flow"></div>
+                </div>
+                <div class="stack-controls">
+                    <button class="stack-btn hover-target" onclick="cycleStack('automation', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="stack-counter">1 / 6</span>
+                    <button class="stack-btn hover-target" onclick="cycleStack('automation', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <span class="click-hint">[ SCROLL / CLICK CARD TO CYCLE • TAP FRONT FOR FULL VIEW ]</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+        <h2 class="section-header reveal">Skills</h2>
+        <div class="skills-container">
+            <div class="skill-box reveal">
+                <i class="fa-brands fa-python"></i>
+                <h4>Python & C++</h4>
+                <p>Core algorithmic logic.</p>
+            </div>
+            <div class="skill-box reveal reveal-delay-1">
+                <i class="fa-brands fa-flutter"></i>
+                <h4>Flutter & Dart</h4>
+                <p>Mobile app development.</p>
+            </div>
+            <div class="skill-box reveal reveal-delay-2">
+                <i class="fa-solid fa-server"></i>
+                <h4>Flask & MongoDB</h4>
+                <p>Backend & REST APIs.</p>
+            </div>
+            <div class="skill-box reveal">
+                <i class="fa-solid fa-microchip"></i>
+                <h4>AI Integration</h4>
+                <p>Groq API, Whisper & OpenAI.</p>
+            </div>
+            <div class="skill-box reveal reveal-delay-1">
+                <i class="fa-solid fa-network-wired"></i>
+                <h4>n8n Automation</h4>
+                <p>Webhooks & AI agents.</p>
+            </div>
+            <div class="skill-box reveal reveal-delay-2">
+                <i class="fa-brands fa-git-alt"></i>
+                <h4>Git & Docker</h4>
+                <p>Version tracking & containers.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="reveal">
+            <h2 class="contact-title">Let's Talk</h2>
+            <a href="mailto:noorfatimanaeem22@gmail.com" class="contact-email hover-target">noorfatimanaeem22@gmail.com</a>
+
+            <div class="social-links">
+                <a href="https://github.com/NoorFatima-eng" target="_blank" class="social-link hover-target"><i class="fa-brands fa-github"></i></a>
+                <a href="https://linkedin.com/in/noor-fatima" target="_blank" class="social-link hover-target"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="tel:03322713381" class="social-link hover-target"><i class="fa-solid fa-phone"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL -->
+    <div id="fcModal" class="modal-overlay">
+        <span class="close-btn hover-target" onclick="closeFlashcard()">&times;</span>
+        <div class="flashcard-wrapper">
+            <div class="flashcard" id="cardElement">
+                <img id="fcImg" src="" alt="Project screen" class="fc-image">
+                <h4 id="fcDesc" class="fc-desc">Loading...</h4>
+
+                <div class="fc-controls">
+                    <button class="btn-glow hover-target" onclick="prevSlide()" style="padding: 5px 15px;">&#8592; Prev</button>
+                    <span id="fcCount" class="fc-counter">1 // 5</span>
+                    <button class="btn-glow hover-target" onclick="nextSlide()" style="padding: 5px 15px;">Next &#8594;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const projectData = {
+            // Update Mentaxia Data to contain all 11 descriptions and images
+            mentaxia: [
+                { img: "login_as.png", desc: "login as counselor or pateint" },
+                { img: "login.png", desc: "login screen" },
+                { img: "patient_dashboard.png", desc: "The main home screen that provides quick access to all essential features. Book Now opens the counselor list, AI Support launches the chatbot, Relaxing Exercises opens guided activities, and Learning Center provides mental health articles and wellness resources." },
+                { img: "patient_account.png", desc: "Manage your personal information, update your profile details, and customize app preferences from one place." },
+                { img: "available_counselor.png", desc: "Browse a list of qualified counselors, view their specialization, ratings, and consultation fee, then select a counselor to book a therapy session." },
+                { img: "book.png", desc: "Select your preferred date and time, describe your concern, and confirm your appointment with the chosen counselor." },
+                { img: "therapy_screen.png", desc: "View your therapy history, join upcoming therapy sessions, access session transcripts and notes, or quickly rebook an appointment with the same counselor." },
+                { img: "codered.png", desc: "An AI-powered mental health chatbot that provides real-time emotional support. If self-harm or suicide-related messages are detected, the Code Red mechanism is activated, sending supportive notifications and engaging the user in conversation" },
+                { img: "appointment.png", desc: "The AI chatbot can automatically schedule therapy appointments by understanding natural language requests, booking sessions with the selected counselor, and instantly confirming the appointment within the chat." },
+                { img: "chat.png", desc: "Securely chat with your counselor before and after therapy sessions. Until the consultation fee is paid, the session status remains Unpaid, voice and video calling features become available for live counseling." },
+                { img: "transcript.png", desc: "Access the transcript of completed therapy sessions for future reference. The patient has full control over transcript privacy and can grant the counselor temporary access for a limited time when needed." },
+                { img: "doctor_dashboard.png", desc: "The Doctor Dashboard provides an overview of appointments, upcoming consultations, and patient activity. It also enables counselors to manage their schedule, monitor consultation statistics, and upload mental health resources for patients." },
+                { img: "appointment_screen.png", desc: "Manage daily appointments by viewing pending, upcoming, and rescheduled sessions. Doctors can accept or decline requests, review the patient's mood, start therapy sessions, and mark consultations as completed." },
+                { img: "session_detail.png", desc: "View complete patient information and session details, add private session notes, access transcripts and patient notes, or reschedule and manage therapy sessions from a single screen." },
+                { img: "doctor_availabilityscreen.png", desc: "Doctors can set their available consultation days and time slots. Only the doctor's selected availability is visible to patients, ensuring appointments can be booked only during the doctor's available hours." },
+                { img: "doctor_profile.png", desc: "Doctors can manage their professional profile by updating personal information, specialization, consultation fee, clinic location, and profile picture. They can also securely log out or delete their account if needed." }
+            ],
+            blockvote: [
+                { img: "register.png", desc: "Users register by providing their name and CNIC, which are combined to generate a unique Voter ID. The generated ID is used for secure login, while the CNIC is used only for ID generation and is not stored." },
+                { img: "voteID.png", desc: "Upon registration, a unique Voter ID is generated and provided to the user. This ID is used for secure login and vote casting throughout the platform." },
+                { img: "voterlogin.png", desc: "Voter Login: Voters authenticate using their unique Voter ID (generated from their name and CNIC during registration) along with their password. This ensures that only registered users can securely access the blockchain voting portal and cast their vote." },
+                { img: "castvote.png", desc: "After logging in, voters can securely cast their vote by selecting a candidate from the ballot. Each vote is digitally signed using the voter's RSA private key before being recorded on the blockchain, ensuring authenticity, integrity, and that the vote cannot be altered after submission." },
+                { img: "casted.png", desc: "Once the vote is submitted, it is permanently recorded on the blockchain and cannot be modified or deleted. The system verifies the RSA digital signature, encrypts the vote using AES, and validates voter authenticity through Zero-Knowledge Proof (ZKP), providing a secure blockchain receipt as proof of a successful vote." },
+                { img: "result.png", desc: "The results dashboard displays real-time vote counts directly from the blockchain, automatically refreshing to reflect the latest recorded votes. It highlights the current leading candidate and provides both graphical and tabular visualizations, ensuring transparent and tamper-proof election results." },
+                { img: "admin.png", desc: "Administrators must enter a secret access key along with their username and password to access the admin panel. All login attempts are logged and monitored to prevent unauthorized access." },
+                { img: "adminp.png", desc: "A centralized admin panel for managing candidates, verifying RSA digital signatures, and auditing every blockchain record. It provides full transparency by validating each block and ensuring the integrity of all recorded votes" },
+                { img: "test.png", desc: "Every vote is securely stored as a separate blockchain transaction, with each block linked to the previous one through cryptographic hashes to create an immutable chain. The audit panel verifies block integrity, proof-of-work, encrypted votes, and RSA digital signatures, ensuring that any attempt to alter election data is immediately detected and preserving complete transparency and trust in the voting process." }
+            
+            ],
+            automation: [
+                { img: "email_automation.png", desc: "An automated email workflow built in n8n that sends personalized emails from contacts stored in Google Sheets. It prevents duplicate emails by tracking delivery status and automatically updating the spreadsheet after each successful send." },
+                { img: "post.png", desc: "An AI-powered content creation workflow built with n8n that generates professional LinkedIn posts through real-time web research and creates matching AI-generated images. The complete content package is automatically delivered to the user via email." },
+                { img: "scrapping.png", desc: "An automated n8n workflow that scrapes YouTube video data using the Apify API based on a user-provided search query. The extracted insights are automatically processed and stored in Google Sheets for content research and analysis." },
+                { img: "copywritefree.png", desc: "An end-to-end n8n automation that generates and publishes AI-powered YouTube Shorts by combining copyright-free video footage, background music, and AI-generated motivational quotes. The workflow automatically creates, uploads, and tracks published content with Google Sheets integration." },
+                { img: "quotes.png", desc: "An n8n workflow that uses AI to generate motivational quotes and automatically stores them in Google Sheets. The generated content is later used to create engaging YouTube Shorts without manual effort." },
+                { img: "youtube.png", desc: "An end-to-end n8n workflow that automatically creates YouTube Shorts by combining AI-generated motivational quotes with copyright-free video footage and music. The finished videos are uploaded to YouTube, tracked in Google Sheets, and managed without any manual editing." }
+            
+            ]
+        };
+
+        // Stacked Carousel State Management
+        const stackStates = {
+            mentaxia: 0,
+            blockvote: 0,
+            automation: 0
+        };
+
+        function updateStackUI(projectId) {
+            const carousel = document.querySelector(`.stacked-carousel[data-project="${projectId}"]`);
+            if (!carousel) return;
+
+            const cards = carousel.querySelectorAll('.stack-card');
+            const total = cards.length;
+            const activeIdx = stackStates[projectId];
+
+            cards.forEach((card, i) => {
+                const pos = (i - activeIdx + total) % total;
+                card.setAttribute('data-pos', pos);
+            });
+
+            const counter = carousel.querySelector('.stack-counter');
+            if (counter) {
+                counter.innerText = `${activeIdx + 1} / ${total}`;
+            }
+        }
+
+        function cycleStack(projectId, direction) {
+            const carousel = document.querySelector(`.stacked-carousel[data-project="${projectId}"]`);
+            if (!carousel) return;
+            const total = carousel.querySelectorAll('.stack-card').length;
+
+            stackStates[projectId] = (stackStates[projectId] + direction + total) % total;
+            updateStackUI(projectId);
+        }
+
+        function onCardClick(projectId, cardIdx) {
+            const currentActive = stackStates[projectId];
+            if (cardIdx === currentActive) {
+                openFlashcard(projectId, cardIdx);
+            } else {
+                stackStates[projectId] = cardIdx;
+                updateStackUI(projectId);
+            }
+        }
+
+        // Attach Mouse-Wheel Listening to stacked carousels
+        document.querySelectorAll('.stacked-carousel').forEach(carousel => {
+            const projectId = carousel.getAttribute('data-project');
+            let lastWheelTime = 0;
+
+            carousel.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const now = Date.now();
+                if (now - lastWheelTime < 220) return; // Debounce speed
+                lastWheelTime = now;
+
+                if (e.deltaY > 0) {
+                    cycleStack(projectId, 1);
+                } else if (e.deltaY < 0) {
+                    cycleStack(projectId, -1);
+                }
+            }, { passive: false });
+        });
+
+        // --- Flashcard Modal Logic ---
+        let currentProject = '';
+        let currentIndex = 0;
+
+        function openFlashcard(projectId, startIndex = 0) {
+            currentProject = projectId;
+            currentIndex = startIndex;
+            updateCardData();
+            document.getElementById('fcModal').classList.add('active');
+        }
+
+        function closeFlashcard() {
+            document.getElementById('fcModal').classList.remove('active');
+        }
+
+        function updateCardData() {
+            const data = projectData[currentProject];
+            const card = document.getElementById('cardElement');
+            card.classList.remove('is-flipping');
+            void card.offsetWidth;
+            card.classList.add('is-flipping');
+
+            setTimeout(() => {
+                document.getElementById('fcImg').src = data[currentIndex].img;
+                document.getElementById('fcDesc').innerText = data[currentIndex].desc;
+                document.getElementById('fcCount').innerText = `${currentIndex + 1} // ${data.length}`;
+            }, 300);
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % projectData[currentProject].length;
+            updateCardData();
+        }
+
+        function prevSlide() {
+            const data = projectData[currentProject];
+            currentIndex = (currentIndex - 1 + data.length) % data.length;
+            updateCardData();
+        }
+
+        // --- Custom Cursor ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorRing = document.querySelector('.cursor-ring');
+
+        window.addEventListener('mousemove', (e) => {
+            cursorDot.style.left = `${e.clientX}px`;
+            cursorDot.style.top = `${e.clientY}px`;
+            setTimeout(() => {
+                cursorRing.style.left = `${e.clientX}px`;
+                cursorRing.style.top = `${e.clientY}px`;
+            }, 50);
+        });
+
+        document.querySelectorAll('.hover-target').forEach(target => {
+            target.addEventListener('mouseenter', () => {
+                cursorRing.style.width = '60px';
+                cursorRing.style.height = '60px';
+            });
+            target.addEventListener('mouseleave', () => {
+                cursorRing.style.width = '40px';
+                cursorRing.style.height = '40px';
+            });
+        });
+
+        // --- Reveal Animations ---
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target);
+            });
+        }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
+        revealElements.forEach(el => revealOnScroll.observe(el));
+
+        // --- Background Neural Network Canvas ---
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, particles;
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            const particleCount = Math.floor((width * height) / 12000);
+            for(let i=0; i<particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    size: Math.random() * 2 + 1
+                });
+            }
+        }
+
+        function drawNeuralNetwork() {
+            ctx.clearRect(0, 0, width, height);
+
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.7)';
+                ctx.fill();
+
+                for(let j=i+1; j<particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x;
+                    let dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if(dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        let opacity = 1 - (dist/120);
+                        ctx.strokeStyle = `rgba(0, 243, 255, ${opacity * 0.3})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawNeuralNetwork);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        drawNeuralNetwork();
+    </script>
+</body>
+</html>
